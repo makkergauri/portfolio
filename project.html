@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Project · Gauri Makker</title>
+<meta name="description" content="Gauri Makker builds computer vision pipelines, grounded LLM systems, and renderers from scratch. Computer science at VIT Bhopal.">
+<meta property="og:title" content="Gauri Makker · Computer Vision & ML">
+<meta property="og:description" content="Systems that render, see and reason, usually from scratch.">
+<meta property="og:type" content="website">
+<!-- PLACEHOLDER: after deploying, add a 1200×630 screenshot as assets/og.png and uncomment:
+<meta property="og:image" content="https://YOUR-DOMAIN/assets/og.png"> -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23121110'/><path d='M5 5h7M5 5v7M27 27h-7M27 27v-7' stroke='%23FF3D8B' stroke-width='2.5' fill='none'/><circle cx='16' cy='16' r='6' fill='%23FFB23F'/></svg>">
+<script>
+  /* set the theme before paint so there's no flash */
+  (function () { var t; try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t; })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400&family=Noto+Sans+Gurmukhi:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#cs">Skip to content</a>
+<header class="bar">
+  <div class="wrap">
+    <a class="mark" href="index.html">gauri<span>.</span>makker</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="index.html#about">About</a>
+      <a href="index.html#experience">Experience</a>
+      <a href="index.html#work">Projects</a>
+      <a href="index.html#notes">Notes</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <button class="switch" id="themeToggle" type="button" aria-label="Switch between night and day theme">
+      <span class="plate" aria-hidden="true"></span><span class="switch-text">Night</span>
+    </button>
+  </div>
+</header>
+<main id="cs"><!-- filled from js/data.js --></main>
+<footer><div class="wrap mono"><span>Gauri Makker</span><span>© <span id="year"></span></span></div></footer>
+<div id="hoverbox" aria-hidden="true"><span class="det-label"></span></div>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
