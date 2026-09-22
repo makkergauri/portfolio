@@ -1,6 +1,7 @@
 /* =============================================================
    PERSONAL PAGE CONTENT (personal.html)
-   Everything written on the page lives here.
+   Everything written on the page lives here, so you can change
+   words without touching layout code.
    ============================================================= */
 
 window.ME = {
@@ -52,7 +53,7 @@ window.ME = {
   ],
 
   /* PLACES I'VE BEEN
-     Add a new line each time I travel somewhere. lat / lon: search
+     Add a new line each time you travel somewhere. lat / lon: search
      "<place> coordinates" and copy the two numbers. */
   home: { place: "Uttarakhand", lat: 30.07, lon: 79.09 },
   visited: [
@@ -64,16 +65,17 @@ window.ME = {
     { place: "Chennai", lat: 13.08, lon: 80.27, note: "" },
     { place: "Pondicherry", lat: 11.93, lon: 79.83, note: "the sea" }
   ],
-  /* where you're going next: shown as a dashed pin */
-  next: { place: "Greece", lat: 37.98, lon: 23.73 },
 
-  /* A VIDEO OF ME TALKING */
+  /* A VIDEO OF ME TALKING
+     Either put a file at assets/video.mp4, or paste a YouTube video ID
+     (the part after v= in the link) into "youtube". Leave both empty
+     and the page shows "coming soon". */
   video: { file: "assets/video.mp4", youtube: "", caption: "Two minutes of me, talking. Which, for me, is restraint." },
 
   /* GUESTBOOK
      Notes people send you arrive by email. Paste the ones you like here
      and they appear on the page:
-     { name: "XYZ", line: "What they wrote." } */
+     { name: "Aarav", line: "What they wrote." } */
   guestbook: [
   ],
 

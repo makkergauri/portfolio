@@ -3,7 +3,7 @@
    - theme toggle (shared with the work portfolio)
    - avatar breathes and sways with the mouse (first screen only)
    - a mandala that draws itself, click for a new one
-   - globe of the places I have been
+   - globe of the places I've been
    - photos, video, guestbook
    ============================================================= */
 (function () {
@@ -142,9 +142,12 @@
     })();
   }
 
-  /* ---------- the globe of places I've been ---------- */
+  /* ---------- the globe of places I've been ----------
+     Drag to spin. Click a pin (or a name in the list) and the globe turns
+     to it and zooms in, so you can see the region. Click empty space or the
+     same pin again to zoom back out. */
   const canvas = $('#globe'), list = $('#placeList');
-  const been = M.visited || [], home = M.home, next = M.next;
+  const been = M.visited || [], home = M.home;
   const title = $('#placesTitle');
   if (title) title.textContent = `${been.length} places, so far`;
   if (list) {
@@ -153,27 +156,35 @@
         <span class="n">${String(i + 1).padStart(2, '0')}</span>
         <span class="name">${esc(p.place)}</span>
         <span class="st">${esc(p.note || 'been there')}</span>
-      </button></li>`).join('') + (next ? `
-      <li><button type="button" data-next="1">
-        <span class="n">→</span><span class="name">${esc(next.place)}</span><span class="st">next</span>
-      </button></li>` : '');
+      </button></li>`).join('');
     const c = $('#travelCount');
     if (c) c.innerHTML = `<b>${been.length}</b> down. The rest of the map is still blank.`;
   }
   if (canvas && window.LAND) {
     const ctx = canvas.getContext('2d');
-    const L = window.LAND, rad = Math.PI / 180;
+    const L = window.LAND, rad = Math.PI / 180, N = L.length / 2;
+    // pre-compute each land point on the unit sphere, so每 frame only needs a rotation
+    const A = new Float32Array(N), B = new Float32Array(N), Yv = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const lon = L[i * 2] * rad, lat = L[i * 2 + 1] * rad, cl = Math.cos(lat);
+      A[i] = cl * Math.sin(lon); B[i] = cl * Math.cos(lon); Yv[i] = Math.sin(lat);
+    }
     let W = 0, dpr = 1;
-    let rotLon = -(home ? home.lon : 0), rotLat = -18, targetLon = null, targetLat = null, focus = -1;
-    let dragging = false, lastX = 0, lastY = 0, idle = 0;
+    let rotLon = -(home ? home.lon : 0), rotLat = (home ? home.lat * .7 : 15), targetLon = null, targetLat = null;
+    let zoom = 1, zoomTarget = 1, focus = -1;
+    let dragging = false, lastX = 0, lastY = 0, idle = 0, downAt = null;
     function size() { dpr = Math.min(devicePixelRatio, 2); W = canvas.clientWidth; canvas.width = W * dpr; canvas.height = W * dpr; }
     size(); addEventListener('resize', size);
 
+    const R = () => W * .42 * zoom;
     function project(lat, lon) {
-      const la = lat * rad, lo = (lon + rotLon) * rad, t = rotLat * rad;
-      const x = Math.cos(la) * Math.sin(lo), y = Math.sin(la), z = Math.cos(la) * Math.cos(lo);
-      const y2 = y * Math.cos(t) - z * Math.sin(t), z2 = y * Math.sin(t) + z * Math.cos(t);
-      const r = W * .42;
+      const la = lat * rad, lo = lon * rad, cl = Math.cos(la);
+      const a = cl * Math.sin(lo), b = cl * Math.cos(lo), y = Math.sin(la);
+      const rl = rotLon * rad, t = rotLat * rad;
+      const x = a * Math.cos(rl) + b * Math.sin(rl);
+      const z0 = b * Math.cos(rl) - a * Math.sin(rl);
+      const y2 = y * Math.cos(t) - z0 * Math.sin(t), z2 = y * Math.sin(t) + z0 * Math.cos(t);
+      const r = R();
       return { x: W / 2 + x * r, y: W / 2 - y2 * r, z: z2 };
     }
     function arc(a, b, n = 40) {
@@ -183,48 +194,45 @@
       for (let i = 0; i <= n; i++) {
         const t = i / n, s = Math.sin(d) || 1, k1 = Math.sin((1 - t) * d) / s, k2 = Math.sin(t * d) / s;
         const x = k1 * p[0] + k2 * q[0], y = k1 * p[1] + k2 * q[1], z = k1 * p[2] + k2 * q[2];
-        out.push({ lat: Math.asin(z / Math.hypot(x, y, z)) / rad, lon: Math.atan2(y, x) / rad, lift: 1 + Math.sin(t * Math.PI) * .10 });
+        out.push({ lat: Math.asin(z / Math.hypot(x, y, z)) / rad, lon: Math.atan2(y, x) / rad, lift: 1 + Math.sin(t * Math.PI) * .06 });
       }
       return out;
     }
     const trips = home ? been.filter(p => p.place !== home.place).map(p => arc(home, p)) : [];
-    const dream = home && next ? arc(home, next, 60) : null;
-
-    canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; targetLon = null; canvas.setPointerCapture(e.pointerId); });
-    canvas.addEventListener('pointermove', e => {
-      if (!dragging) return;
-      rotLon += (e.clientX - lastX) * .35; rotLat = Math.max(-60, Math.min(60, rotLat - (e.clientY - lastY) * .25));
-      lastX = e.clientX; lastY = e.clientY; idle = 0;
-    });
-    // click a pin on the globe to pick it
-    let downAt = null;
-    canvas.addEventListener('pointerdown', e => { downAt = { x: e.clientX, y: e.clientY }; });
-    canvas.addEventListener('pointerup', e => {
-      dragging = false;
-      if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;   // that was a drag, not a click
-      const r = canvas.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-      let best = null;
-      const test = (p, i) => {
-        const s = project(p.lat, p.lon); if (s.z <= 0) return;
-        const d = Math.hypot(s.x - mx, s.y - my);
-        if (d < 22 && (!best || d < best.d)) best = { d, p, i };
-      };
-      been.forEach(test); if (next) test(next, been.length);
-      if (best) focusOn(best.p, best.i);
-    });
-    canvas.addEventListener('pointercancel', () => { dragging = false; });
 
     const pick = $('#globePick');
     function focusOn(p, i) {
-      focus = i; targetLon = -p.lon; targetLat = -p.lat * .6; idle = 0;
+      if (focus === i) return zoomOut();
+      focus = i; targetLon = -p.lon; targetLat = p.lat; zoomTarget = 3.6; idle = 0;   // tilt equals the latitude, so the place sits in the middle
       $$('.places button').forEach((b, j) => b.classList.toggle('on', j === i));
-      if (pick) pick.innerHTML = `<b>${esc(p.place)}</b>${p.note ? ' — ' + esc(p.note) : (i === been.length ? ' — next on the list' : '')}`;
+      if (pick) pick.innerHTML = `<b>${esc(p.place)}</b>${p.note ? ' — ' + esc(p.note) : ''} <span class="mono">· click again to zoom out</span>`;
     }
-    if (list) list.addEventListener('click', e => {
-      const b = e.target.closest('button'); if (!b) return;
-      if (b.dataset.next && next) focusOn(next, been.length);
-      else if (b.dataset.i) focusOn(been[+b.dataset.i], +b.dataset.i);
+    function zoomOut() {
+      focus = -1; zoomTarget = 1; targetLon = null; targetLat = null;
+      $$('.places button').forEach(b => b.classList.remove('on'));
+      if (pick) pick.innerHTML = '';
+    }
+    if (list) list.addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) focusOn(been[+b.dataset.i], +b.dataset.i); });
+
+    canvas.addEventListener('pointerdown', e => { dragging = true; downAt = { x: e.clientX, y: e.clientY }; lastX = e.clientX; lastY = e.clientY; targetLon = null; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      rotLon += (e.clientX - lastX) * (.35 / zoom); rotLat = Math.max(-75, Math.min(75, rotLat - (e.clientY - lastY) * (.25 / zoom)));
+      lastX = e.clientX; lastY = e.clientY; idle = 0;
     });
+    canvas.addEventListener('pointerup', e => {
+      dragging = false;
+      if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;    // that was a drag
+      const r = canvas.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      let best = null;
+      been.forEach((p, i) => {
+        const s = project(p.lat, p.lon); if (s.z <= 0) return;
+        const d = Math.hypot(s.x - mx, s.y - my);
+        if (d < 24 && (!best || d < best.d)) best = { d, p, i };
+      });
+      if (best) focusOn(best.p, best.i); else zoomOut();
+    });
+    canvas.addEventListener('pointercancel', () => { dragging = false; });
 
     let visible = false;
     new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(canvas);
@@ -235,63 +243,81 @@
       const light = css('--light'), sight = css('--sight'), ink = css('--ink'), ink2 = css('--ink-2'), rule = css('--rule');
       if (targetLon !== null) {
         const d = ((targetLon - rotLon + 540) % 360) - 180;
-        rotLon += d * .06; rotLat += (targetLat - rotLat) * .06;
+        rotLon += d * .08; rotLat += (targetLat - rotLat) * .08;
         if (Math.abs(d) < .1) targetLon = null;
-      } else if (!dragging && !reduce) { idle++; if (idle > 90) rotLon += .1; }
+      } else if (!dragging && !reduce && zoom < 1.05) { idle++; if (idle > 90) rotLon += .1; }
+      zoom += (zoomTarget - zoom) * .08;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, W);
-      const r = W * .42;
-      const g = ctx.createRadialGradient(W / 2 - r * .3, W / 2 - r * .35, r * .1, W / 2, W / 2, r * 1.05);
+      const view = W * .42, r = R();
+      // everything stays inside the same circle, so zooming looks like a magnifier
+      ctx.save();
+      ctx.beginPath(); ctx.arc(W / 2, W / 2, view, 0, Math.PI * 2); ctx.clip();
+      const g = ctx.createRadialGradient(W / 2 - view * .3, W / 2 - view * .35, view * .1, W / 2, W / 2, view * 1.05);
       g.addColorStop(0, 'rgba(255,178,63,.10)'); g.addColorStop(1, 'rgba(255,61,139,.02)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(W / 2, W / 2, r, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = rule; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
 
-      for (let i = 0; i < L.length; i += 2) {
-        const p = project(L[i + 1], L[i]);
-        if (p.z <= 0) continue;
-        ctx.globalAlpha = .22 + p.z * .6; ctx.fillStyle = ink2;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 1.2 + p.z * .6, 0, 6.2832); ctx.fill();
+      // land dots
+      const rl = rotLon * rad, t = rotLat * rad;
+      const cr = Math.cos(rl), sr = Math.sin(rl), ct = Math.cos(t), st = Math.sin(t);
+      const step = zoom < 1.5 ? 3 : 1;                 // fewer dots when zoomed out, all of them up close
+      const dot = Math.max(1, 1.1 * zoom * .8);
+      ctx.fillStyle = ink2;
+      for (let i = 0; i < N; i += step) {
+        const a = A[i], b = B[i], y = Yv[i];
+        const z0 = b * cr - a * sr;
+        const z2 = y * st + z0 * ct;
+        if (z2 <= 0) continue;
+        const x = (a * cr + b * sr) * r + W / 2;
+        if (x < -10 || x > W + 10) continue;
+        const yy = W / 2 - (y * ct - z0 * st) * r;
+        if (yy < -10 || yy > W + 10) continue;
+        ctx.globalAlpha = .2 + z2 * .6;
+        ctx.fillRect(x, yy, dot, dot);
       }
       ctx.globalAlpha = 1;
 
-      const t = reduce ? 1 : ((now || 0) / 2600) % 1;
-      const line = (path, color, alpha, width, dash) => {
+      // travel lines from home
+      const dash = reduce ? 1 : ((now || 0) / 2600) % 1;
+      trips.forEach((path, k) => {
         ctx.beginPath(); let started = false;
         path.forEach(pt => {
           const p = project(pt.lat, pt.lon);
           const px = W / 2 + (p.x - W / 2) * pt.lift, py = W / 2 + (p.y - W / 2) * pt.lift;
           if (p.z > -.05) { started ? ctx.lineTo(px, py) : ctx.moveTo(px, py); started = true; } else started = false;
         });
-        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = width;
-        if (dash) { ctx.setLineDash(dash); ctx.lineDashOffset = -t * 36; }
-        ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      };
-      trips.forEach((p, k) => line(p, light, k === focus ? .95 : .45, k === focus ? 2 : 1.2));
-      if (dream) line(dream, sight, .6, 1.4, [4, 6]);
+        ctx.strokeStyle = light; ctx.globalAlpha = k === focus ? .95 : .4; ctx.lineWidth = k === focus ? 2 : 1.2;
+        ctx.stroke(); ctx.globalAlpha = 1;
+      });
 
-      const pin = (lat, lon, color, label, big) => {
-        const p = project(lat, lon); if (p.z <= 0) return;
-        ctx.fillStyle = color; ctx.globalAlpha = .25;
-        ctx.beginPath(); ctx.arc(p.x, p.y, big ? 13 : 9, 0, 6.2832); ctx.fill();
-        ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(p.x, p.y, big ? 5 : 3.6, 0, 6.2832); ctx.fill();
-        if (label && p.z > .25) { ctx.font = `500 ${big ? 12 : 11}px ${css('--mono')}`; ctx.fillStyle = ink; ctx.fillText(label, p.x + 10, p.y - 8); }
+      // pins
+      const pin = (p, i) => {
+        const s = project(p.lat, p.lon); if (s.z <= 0) return;
+        const big = i === focus;
+        ctx.fillStyle = light; ctx.globalAlpha = .25;
+        ctx.beginPath(); ctx.arc(s.x, s.y, big ? 14 : 9, 0, 6.2832); ctx.fill();
+        ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(s.x, s.y, big ? 5 : 3.6, 0, 6.2832); ctx.fill();
+        if ((big || zoom > 1.6) && s.z > .2) {
+          ctx.font = `500 ${big ? 13 : 11}px ${css('--mono')}`; ctx.fillStyle = ink;
+          ctx.fillText(p.place, s.x + 11, s.y - 9);
+        }
       };
-      // only the pin you picked shows its name, so the map stays readable
-      been.forEach((p, i) => { if (home && p.place === home.place) return; pin(p.lat, p.lon, light, i === focus ? p.place : '', i === focus); });
-      // home gets a little house instead of a dot
+      been.forEach((p, i) => { if (home && p.place === home.place) return; pin(p, i); });
       if (home) {
         const hp = project(home.lat, home.lon);
         if (hp.z > 0) {
           ctx.globalAlpha = .25; ctx.fillStyle = light;
-          ctx.beginPath(); ctx.arc(hp.x, hp.y, 12, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1;
-          ctx.font = '15px system-ui, "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+          ctx.beginPath(); ctx.arc(hp.x, hp.y, 13, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1;
+          ctx.font = '16px system-ui, "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText('🏠', hp.x, hp.y);
           ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
         }
       }
-      if (next) pin(next.lat, next.lon, sight, next.place + ' · someday', focus === been.length);
+      ctx.restore();
+      ctx.strokeStyle = rule; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(W / 2, W / 2, view, 0, Math.PI * 2); ctx.stroke();
     })();
   }
 

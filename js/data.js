@@ -7,7 +7,8 @@
 
 window.SITE = {
 
-  /* The URL of personal page */
+  /* Your personal page (hobbies, writing, recommendations). It lives in this same site as personal.html.
+     If you ever move it to its own address, put the full link here instead, e.g. "https://gauri.me". */
   personalSite: "personal.html",
 
   /* Your GitHub username: the "Live from GitHub" strip shows your latest pushed repos. */
@@ -63,7 +64,11 @@ window.SITE = {
     }
   ],
 
-  /* Each project gets a panel on the home page and its own case-study page */
+  /* "role" is only shown for team projects (team: true).
+     Each project gets a panel on the home page and its own case-study page
+     (project.html?p=slug).
+     visual: which drawing to show until you add a real image.
+     image:  set to e.g. "assets/playvision.webp" to use a screenshot instead. */
   projects: [
     {
       slug: "playvision",
@@ -195,7 +200,10 @@ window.SITE = {
     { title: "Telling football teams apart without labels", blurb: "Clustering embeddings when nobody tells you which shirt is which." }
   ],
 
-  /* Recommendations you've received and have permission to publish. */
+  /* Recommendations you've received and have permission to publish.
+     They only appear on the site once you add them here. Format:
+     { name: "Dr. A. Sharma", role: "Professor, VIT Bhopal", text: "What they wrote.", link: "https://linkedin.com/in/..." }
+     (link is optional) */
   recommendations: [
   ]
 };
