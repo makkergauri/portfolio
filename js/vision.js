@@ -3,7 +3,7 @@
    Sits on top of the render and "sees" it:
    - detection boxes that follow each sphere, with live confidence scores
    - a scan line that sweeps down; boxes flash as it passes
-   - dust motes drifting through the key light (and away from your cursor)
+   - dust motes drifting through the key light
    - a running detection log in the corner
    ============================================================= */
 (function () {

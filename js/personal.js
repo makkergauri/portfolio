@@ -3,7 +3,7 @@
    - theme toggle (shared with the work portfolio)
    - avatar breathes and sways with the mouse (first screen only)
    - a mandala that draws itself, click for a new one
-   - globe of the places you've been
+   - globe of the places I have been
    - photos, video, guestbook
    ============================================================= */
 (function () {
@@ -53,6 +53,10 @@
     if (kind === 'mandala') return '<div class="thing-art"><canvas data-mini="1"></canvas></div>';
     if (kind === 'film') return '<div class="thing-art"><div class="film" aria-hidden="true"><div class="film-strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>';
     if (kind === 'dance') return '<div class="thing-art"><div class="dance" aria-hidden="true"><i></i></div></div>';
+    if (kind === 'cook') return '<div class="thing-art"><div class="cook" aria-hidden="true"><i></i><i></i><i></i><span></span></div></div>';
+    if (kind === 'bake') return '<div class="thing-art"><div class="bake" aria-hidden="true"><span><i></i></span></div></div>';
+    if (kind === 'music') return '<div class="thing-art"><div class="music" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>';
+    if (kind === 'lens') return '<div class="thing-art"><div class="lens" aria-hidden="true"><span><i></i><i></i><i></i></span></div></div>';
     if (kind === 'talk') return '<div class="thing-art"><div class="talk" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>';
     return '';
   };
@@ -123,30 +127,6 @@
     new IntersectionObserver(es => { if (es[0].isIntersecting && !started) { started = true; runMandala(cv, 99 + i * 31); } }).observe(cv);
   });
 
-  /* ---------- photos ---------- */
-  const gallery = $('#gallery'), viewer = $('#viewer');
-  const shapes = ['4 / 5', '1 / 1', '3 / 4', '4 / 3', '4 / 5', '3 / 2'];
-  if (gallery) {
-    gallery.innerHTML = (M.photos || []).map((p, i) => {
-      const tilt = ((i * 37) % 7 - 3) * .6;
-      const text = `<span class="cap">${esc(p.caption || '')}</span><span class="where">${esc(p.place || '')}</span>`;
-      return p.src
-        ? `<button class="shot" type="button" style="--tilt:${tilt}deg" data-i="${i}"><img src="${esc(p.src)}" alt="${esc(p.caption || 'Photo')}" loading="lazy">${text}</button>`
-        : `<div class="shot empty" style="--tilt:${tilt}deg; --ar:${shapes[i % shapes.length]}"><span class="ph-frame">photo ${String(i + 1).padStart(2, '0')}</span></div>`;
-    }).join('');
-    gallery.addEventListener('click', e => {
-      const b = e.target.closest('.shot[data-i]'); if (!b || !viewer) return;
-      const p = M.photos[+b.dataset.i];
-      $('#viewerImg').src = p.src; $('#viewerImg').alt = p.caption || '';
-      $('#viewerCap').textContent = [p.caption, p.place].filter(Boolean).join(' · ');
-      viewer.showModal();
-    });
-    if (viewer) {
-      $('.viewer-close', viewer).addEventListener('click', () => viewer.close());
-      viewer.addEventListener('click', e => { if (e.target === viewer) viewer.close(); });
-    }
-  }
-
   /* ---------- avatar sway ---------- */
   if (!reduce && fine) {
     let tx = 0, ty = 0, x = 0, y = 0, mx = innerWidth / 2, my = innerHeight / 2, gx = mx, gy = my;
@@ -216,10 +196,30 @@
       rotLon += (e.clientX - lastX) * .35; rotLat = Math.max(-60, Math.min(60, rotLat - (e.clientY - lastY) * .25));
       lastX = e.clientX; lastY = e.clientY; idle = 0;
     });
-    const up = () => { dragging = false; };
-    canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+    // click a pin on the globe to pick it
+    let downAt = null;
+    canvas.addEventListener('pointerdown', e => { downAt = { x: e.clientX, y: e.clientY }; });
+    canvas.addEventListener('pointerup', e => {
+      dragging = false;
+      if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;   // that was a drag, not a click
+      const r = canvas.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      let best = null;
+      const test = (p, i) => {
+        const s = project(p.lat, p.lon); if (s.z <= 0) return;
+        const d = Math.hypot(s.x - mx, s.y - my);
+        if (d < 22 && (!best || d < best.d)) best = { d, p, i };
+      };
+      been.forEach(test); if (next) test(next, been.length);
+      if (best) focusOn(best.p, best.i);
+    });
+    canvas.addEventListener('pointercancel', () => { dragging = false; });
 
-    function focusOn(p, i) { focus = i; targetLon = -p.lon; targetLat = -p.lat * .6; idle = 0; $$('.places button').forEach((b, j) => b.classList.toggle('on', j === i)); }
+    const pick = $('#globePick');
+    function focusOn(p, i) {
+      focus = i; targetLon = -p.lon; targetLat = -p.lat * .6; idle = 0;
+      $$('.places button').forEach((b, j) => b.classList.toggle('on', j === i));
+      if (pick) pick.innerHTML = `<b>${esc(p.place)}</b>${p.note ? ' — ' + esc(p.note) : (i === been.length ? ' — next on the list' : '')}`;
+    }
     if (list) list.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
       if (b.dataset.next && next) focusOn(next, been.length);
@@ -278,7 +278,19 @@
         if (label && p.z > .25) { ctx.font = `500 ${big ? 12 : 11}px ${css('--mono')}`; ctx.fillStyle = ink; ctx.fillText(label, p.x + 10, p.y - 8); }
       };
       // only the pin you picked shows its name, so the map stays readable
-      been.forEach((p, i) => pin(p.lat, p.lon, light, i === focus ? p.place : '', i === focus));
+      been.forEach((p, i) => { if (home && p.place === home.place) return; pin(p.lat, p.lon, light, i === focus ? p.place : '', i === focus); });
+      // home gets a little house instead of a dot
+      if (home) {
+        const hp = project(home.lat, home.lon);
+        if (hp.z > 0) {
+          ctx.globalAlpha = .25; ctx.fillStyle = light;
+          ctx.beginPath(); ctx.arc(hp.x, hp.y, 12, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1;
+          ctx.font = '15px system-ui, "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('🏠', hp.x, hp.y);
+          ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+        }
+      }
       if (next) pin(next.lat, next.lon, sight, next.place + ' · someday', focus === been.length);
     })();
   }
@@ -353,7 +365,7 @@
 
   /* ---------- reveal on scroll ---------- */
   if (!reduce) {
-    const sel = '.intro, .p-about-text p, .facts-chips, .p-quote figure, .mandala-box, .shot, .thing, .travel, .feed, .note, .note-form, .p-cta-big, .elsewhere';
+    const sel = '.intro, .p-about-text p, .facts-chips, .p-quote figure, .mandala-box, .thing, .travel, .feed, .note, .note-form, .p-cta-big, .elsewhere';
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
     $$(sel).forEach(el => {
       const sibs = [...el.parentElement.children].filter(c => c.matches(sel));
