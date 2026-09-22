@@ -124,8 +124,7 @@
       return;
     }
     if (!cv) return;
-    const w = cv.width = cv.clientWidth * devicePixelRatio, h = cv.height = cv.clientHeight * devicePixelRatio;
-    const c = cv.getContext('2d');
+    cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio;
     if (kind === 'cave') { const st = caves.find(c => c.cv === cv); if (st) newCave(st); else caves.push(newCave({ cv })); drawCave(caves.find(c => c.cv === cv)); }
     if (kind === 'radar' && !radars.includes(cv)) radars.push(cv);
   }
@@ -159,7 +158,9 @@
       if (st.step < 5 && now - st.t > 380) { stepCave(st); st.t = now; drawCave(st); }
       else if (st.step >= 5 && now - st.t > 3200 && !reduce) { newCave(st); drawCave(st); }
     });
-    radars.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawRadar(cv); }); if (!reduce) requestAnimationFrame(radarLoop); })();
+    radars.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawRadar(cv); });
+    if (!reduce) requestAnimationFrame(radarLoop);
+  })();
   // click the cave to generate a new one
   $$('.frame[data-visual="cave"]').forEach(f => f.addEventListener('click', e => { e.preventDefault(); drawArt(f); }));
 
@@ -183,7 +184,12 @@
       if (moved) { pts.push({ x: mx, y: my }); if (pts.length > 18) pts.shift(); }
       tc.clearRect(0, 0, trail.width, trail.height);
       tc.strokeStyle = css('--sight'); tc.lineWidth = 1.5 * devicePixelRatio; tc.lineCap = 'round';
-      for (let i = 1; i < pts.length; i++) { if (Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 160) continue; tc.globalAlpha = i / pts.length * .5; tc.beginPath(); tc.moveTo(pts[i - 1].x * devicePixelRatio, pts[i - 1].y * devicePixelRatio); tc.lineTo(pts[i].x * devicePixelRatio, pts[i].y * devicePixelRatio); tc.stroke(); }
+      for (let i = 1; i < pts.length; i++) {
+        if (Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 160) continue;
+        tc.globalAlpha = i / pts.length * .5; tc.beginPath();
+        tc.moveTo(pts[i - 1].x * devicePixelRatio, pts[i - 1].y * devicePixelRatio);
+        tc.lineTo(pts[i].x * devicePixelRatio, pts[i].y * devicePixelRatio); tc.stroke();
+      }
       tc.globalAlpha = 1;
       requestAnimationFrame(loop);
     })();
@@ -205,7 +211,7 @@
 
   /* ---------- radar page map ---------- */
   const radar = $('#radar'), svg = $('#radarSvg');
-  const secs = [['top', 'render'], ['about', 'emit'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['contact', 'converge']]
+  const secs = [['top', 'render'], ['about', 'emit'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['life', 'ambient'], ['contact', 'converge']]
     .map(([id, name]) => ({ el: document.getElementById(id), name })).filter(s => s.el);
   let you;
   if (radar && svg && secs.length) {
@@ -220,7 +226,7 @@
   }
 
   /* ---------- reveal on scroll ---------- */
-  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
+  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .life-grid > article, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
   // clipped headings can't be observed directly (they have no visible area yet), so watch their parent instead
   const watchers = new Map();
   const rev = new IntersectionObserver(es => es.forEach(e => {
@@ -240,15 +246,6 @@
   if (!reduce) armReveal(document);
 
   /* ---------- scroll-driven pieces ---------- */
-  const bgwords = $$('.bgword');
-  function drift() {
-    if (reduce) return;
-    bgwords.forEach(w => {
-      const r = w.parentElement.getBoundingClientRect();
-      const p = (innerHeight - r.top) / (innerHeight + r.height);   // 0 entering, 1 leaving
-      w.style.setProperty('--shift', ((0.5 - p) * 0.35 * innerWidth).toFixed(1) + 'px');
-    });
-  }
   const photon = $('#photon');
   const work = $('#work'), workProg = $('#workProgress');
   function sizeWork() {
@@ -325,17 +322,13 @@
   }
 
   let ticking = false;
-  function onScroll() { if (ticking) return; ticking = true; requestAnimationFrame(() => { horizontal(); drawRay(); drawConverge(); radarUpdate(); drift(); ticking = false; }); }
+  function onScroll() { if (ticking) return; ticking = true; requestAnimationFrame(() => { horizontal(); drawRay(); drawConverge(); radarUpdate(); ticking = false; }); }
   function onResize() { sizeWork(); buildRay(); buildConverge(); caves.forEach(drawCave); onScroll(); }
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onResize);
   addEventListener('load', onResize);
   document.fonts && document.fonts.ready.then(onResize);
   onResize();
-
-  /* ---------- footer sample count from the hero render ---------- */
-  const foot = $('#footSamples');
-  window.addEventListener('pt:samples', e => { if (foot) foot.textContent = e.detail; });
 
   /* ---------- case-study page ---------- */
   const cs = $('#cs');
