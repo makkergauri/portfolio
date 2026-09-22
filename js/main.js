@@ -18,7 +18,7 @@
 
   /* ---------- theme ---------- */
   const toggle = $('#themeToggle');
-  function syncToggle() { if (toggle) { const light = root.dataset.theme === 'light'; $('.switch-text', toggle).textContent = light ? 'Day' : 'Night'; toggle.setAttribute('aria-pressed', String(light)); } }
+  function syncToggle() { if (toggle) { const light = root.dataset.theme === 'light'; $('.switch-text', toggle).textContent = light ? 'Light' : 'Dark'; toggle.setAttribute('aria-pressed', String(light)); } }
   syncToggle();
   toggle && toggle.addEventListener('click', () => {
     root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
@@ -29,6 +29,22 @@
   window.addEventListener('themechange', () => $$('.frame').forEach(drawArt));
 
   const year = $('#year'); if (year) year.textContent = new Date().getFullYear();
+
+  /* ---------- links to the personal site (address set in data.js) ---------- */
+  const personal = (S.personalSite || '').trim();
+  $$('[data-personal]').forEach(a => {
+    if (personal && !/PLACEHOLDER/.test(personal)) { a.href = personal; a.target = '_blank'; a.rel = 'noopener'; }
+    else { a.classList.add('is-placeholder'); a.title = 'Add your personal site address in js/data.js'; a.addEventListener('click', e => e.preventDefault()); }
+  });
+
+  /* ---------- prism: scroll speed drives the colour split on headings ---------- */
+  let lastY = scrollY, vel = 0;
+  (function velLoop() {
+    const dy = Math.abs(scrollY - lastY); lastY = scrollY;
+    vel += (Math.min(1, dy / 60) - vel) * .1;
+    root.style.setProperty('--vel', reduce ? '0' : (vel * 10).toFixed(2));
+    requestAnimationFrame(velLoop);
+  })();
 
   /* ---------- content from data.js ---------- */
   const timeline = $('#timeline');
@@ -55,6 +71,10 @@
       case 'docs': return `<div class="art docs" aria-hidden="true"><i></i><i></i><i></i></div>`;
       case 'spheres': return `<div class="art spheres" aria-hidden="true"><b></b><b></b><b></b></div>`;
       case 'gantt': return `<div class="art gantt" aria-hidden="true"></div>`;
+      case 'weather': {
+        const codes = ['IN', 'US', 'GB', 'JP', 'BR', 'DE', 'FR', 'AU', 'CA', 'ZA', 'NG', 'KR'], wx = ['sun', 'partly', 'cloud', 'rain', 'storm'];
+        return `<div class="art wx" aria-hidden="true">${codes.map((c, i) => `<div class="wx-cell wx-${wx[(i * 7 + 3) % 5]}"><i></i><span>${c}</span></div>`).join('')}</div>`;
+      }
       default: return `<canvas aria-hidden="true"></canvas>`;   // radar, cave
     }
   }
@@ -85,7 +105,7 @@
   if (notes) notes.innerHTML = S.notes.map(n => `<li><h3>${esc(n.title)}</h3><span class="soon">coming soon</span><p>${esc(n.blurb)}</p></li>`).join('');
 
   /* ---------- project art ---------- */
-  const radars = [], caves = [];
+  const radars = [], caves = [], farms = [];
   // cellular-automata cave, animated one smoothing step at a time (the dungeon crawler's cave generator)
   const GW = 72, GH = 48;
   function newCave(st) { st.g = Array.from({ length: GH }, () => Array.from({ length: GW }, () => Math.random() < .45 ? 1 : 0)); st.step = 0; st.t = performance.now(); return st; }
@@ -124,9 +144,11 @@
       return;
     }
     if (!cv) return;
-    cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio;
+    const w = cv.width = cv.clientWidth * devicePixelRatio, h = cv.height = cv.clientHeight * devicePixelRatio;
+    const c = cv.getContext('2d');
     if (kind === 'cave') { const st = caves.find(c => c.cv === cv); if (st) newCave(st); else caves.push(newCave({ cv })); drawCave(caves.find(c => c.cv === cv)); }
     if (kind === 'radar' && !radars.includes(cv)) radars.push(cv);
+    if (kind === 'farm' && !farms.includes(cv)) farms.push(cv);
   }
   $$('.frame').forEach(drawArt);
 
@@ -151,6 +173,28 @@
     if (!reduce) { if (Math.random() < .012) { ball.tx = Math.random(); ball.ty = Math.random(); } ball.x += (ball.tx - ball.x) * .03; ball.y += (ball.ty - ball.y) * .03; }
     c.fillStyle = css('--ink'); c.beginPath(); c.arc(m + ball.x * pw, m + ball.y * ph, 3.5 * dp, 0, 6.28); c.fill();
   }
+  // Focus Farm: pixel plants grow while "focused" and wilt during a "distracted" spell
+  function drawFarm(cv, now) {
+    const w = cv.width = cv.clientWidth * devicePixelRatio, h = cv.height = cv.clientHeight * devicePixelRatio, c = cv.getContext('2d');
+    const cols = 6, rows = 3, rowH = (h - 16 * devicePixelRatio) / rows;
+    const P = Math.max(2, Math.floor(Math.min(w / 64, rowH / 14)));        // one "pixel" of pixel art
+    const pw = 8 * P, gapX = (w - cols * pw) / (cols + 1);
+    const phase = reduce ? 6 : (now / 1000) % 14, distracted = phase > 9 && phase < 12.5;
+    for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) {
+      const i = r * cols + k, x = gapX + k * (pw + gapX), yb = (r + 1) * rowH - 2 * P;
+      c.fillStyle = css('--rule'); c.fillRect(x, yb, pw, 2 * P);                     // soil
+      const stage = Math.floor(Math.min(4, (phase * .55 + i * .37) % 5));
+      const wilt = distracted && i % 3 === 1;
+      const green = wilt ? '#8a6a3a' : '#4fae6a';
+      for (let s = 0; s < stage * 2; s++) { c.fillStyle = green; c.fillRect(x + 3.5 * P, yb - (s + 1) * P, P, P); }   // stem
+      if (stage >= 2) { c.fillStyle = green; c.fillRect(x + 2 * P, yb - 3 * P, 1.5 * P, P); c.fillRect(x + 4.5 * P, yb - 4 * P, 1.5 * P, P); }
+      if (stage >= 4 && !wilt) { c.fillStyle = i % 2 ? css('--sight') : css('--light'); c.fillRect(x + 2.5 * P, yb - 11 * P, 3 * P, 2 * P); c.fillRect(x + 3 * P, yb - 12 * P, 2 * P, 4 * P); }
+    }
+    c.font = `${10 * devicePixelRatio}px ${css('--mono')}`;
+    c.fillStyle = distracted ? css('--sight') : css('--light');
+    c.fillText(distracted ? 'distracted: plants wilting' : 'focused: farm growing', 10 * devicePixelRatio, h - 8 * devicePixelRatio);
+  }
+
   (function radarLoop(now) {
     now = now || performance.now();
     caves.forEach(st => {
@@ -159,10 +203,22 @@
       else if (st.step >= 5 && now - st.t > 3200 && !reduce) { newCave(st); drawCave(st); }
     });
     radars.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawRadar(cv); });
-    if (!reduce) requestAnimationFrame(radarLoop);
-  })();
+    farms.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawFarm(cv, now); }); if (!reduce) requestAnimationFrame(radarLoop); })();
   // click the cave to generate a new one
   $$('.frame[data-visual="cave"]').forEach(f => f.addEventListener('click', e => { e.preventDefault(); drawArt(f); }));
+
+  // project frames tilt toward the cursor, with a highlight where the light hits
+  if (finePointer && !reduce) {
+    $$('.proj .frame').forEach(f => {
+      f.addEventListener('pointermove', e => {
+        const r = f.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        f.style.transform = `perspective(900px) rotateY(${(x - .5) * 10}deg) rotateX(${(.5 - y) * 8}deg)`;
+        f.style.setProperty('--gx', (x * 100) + '%'); f.style.setProperty('--gy', (y * 100) + '%');
+        f.classList.add('glare');
+      });
+      f.addEventListener('pointerleave', () => { f.style.transform = ''; f.classList.remove('glare'); });
+    });
+  }
 
   // detection box on each project when it comes into view
   const seen = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('seen'); seen.unobserve(e.target); } }), { threshold: .55 });
@@ -184,12 +240,7 @@
       if (moved) { pts.push({ x: mx, y: my }); if (pts.length > 18) pts.shift(); }
       tc.clearRect(0, 0, trail.width, trail.height);
       tc.strokeStyle = css('--sight'); tc.lineWidth = 1.5 * devicePixelRatio; tc.lineCap = 'round';
-      for (let i = 1; i < pts.length; i++) {
-        if (Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 160) continue;
-        tc.globalAlpha = i / pts.length * .5; tc.beginPath();
-        tc.moveTo(pts[i - 1].x * devicePixelRatio, pts[i - 1].y * devicePixelRatio);
-        tc.lineTo(pts[i].x * devicePixelRatio, pts[i].y * devicePixelRatio); tc.stroke();
-      }
+      for (let i = 1; i < pts.length; i++) { if (Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 160) continue; tc.globalAlpha = i / pts.length * .5; tc.beginPath(); tc.moveTo(pts[i - 1].x * devicePixelRatio, pts[i - 1].y * devicePixelRatio); tc.lineTo(pts[i].x * devicePixelRatio, pts[i].y * devicePixelRatio); tc.stroke(); }
       tc.globalAlpha = 1;
       requestAnimationFrame(loop);
     })();
@@ -211,7 +262,7 @@
 
   /* ---------- radar page map ---------- */
   const radar = $('#radar'), svg = $('#radarSvg');
-  const secs = [['top', 'render'], ['about', 'emit'], ['statement', 'signal'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['outliers', 'outliers'], ['contact', 'converge']]
+  const secs = [['top', 'render'], ['about', 'emit'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['signal', 'signal'], ['contact', 'converge']]
     .map(([id, name]) => ({ el: document.getElementById(id), name })).filter(s => s.el);
   let you;
   if (radar && svg && secs.length) {
@@ -226,7 +277,7 @@
   }
 
   /* ---------- reveal on scroll ---------- */
-  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .feed, .ood, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
+  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
   // clipped headings can't be observed directly (they have no visible area yet), so watch their parent instead
   const watchers = new Map();
   const rev = new IntersectionObserver(es => es.forEach(e => {
@@ -311,7 +362,7 @@
 
   function radarUpdate() {
     if (!radar || !you) return;
-    radar.classList.toggle('show', scrollY > innerHeight * .5);
+    radar.classList.toggle('show', scrollY > innerHeight * .5 && scrollY + innerHeight < document.documentElement.scrollHeight - 160);   // hidden at the very bottom so it doesn't cover the footer
     let idx = 0; secs.forEach((s, i) => { if (s.el.getBoundingClientRect().top < innerHeight * .45) idx = i; });
     const a = secs[idx], b = secs[Math.min(idx + 1, secs.length - 1)];
     const ra = a.el.getBoundingClientRect(), span = Math.max(1, (b.el.getBoundingClientRect().top - ra.top));
@@ -329,6 +380,7 @@
   addEventListener('load', onResize);
   document.fonts && document.fonts.ready.then(onResize);
   onResize();
+
 
   /* ---------- case-study page ---------- */
   const cs = $('#cs');

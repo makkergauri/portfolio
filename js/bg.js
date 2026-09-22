@@ -25,9 +25,6 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- background: a cloud of light particles that reshapes itself for each section as you scroll -->
-<canvas id="bg" aria-hidden="true"></canvas>
-
 <header class="bar">
   <div class="wrap">
     <nav class="nav" aria-label="Sections">
@@ -36,9 +33,10 @@
       <a href="#work">Projects</a>
       <a href="#notes">Notes</a>
       <a href="#contact">Contact</a>
+      <a href="#" data-personal>Personal site ↗</a>
     </nav>
-    <button class="switch" id="themeToggle" type="button" aria-label="Switch between night and day theme">
-      <span class="plate" aria-hidden="true"></span><span class="switch-text">Night</span>
+    <button class="switch" id="themeToggle" type="button" aria-label="Switch between dark and light theme">
+      <span class="switch-icon" aria-hidden="true"></span><span class="switch-text">Dark</span>
     </button>
   </div>
 </header>
@@ -152,6 +150,14 @@
         <a href="https://www.linkedin.com/in/gauri-makker/" data-detect="linkedin">LinkedIn</a>
         <a href="resume.pdf" data-detect="resume">Resume</a>
       </div>
+
+      <!-- link out to the personal site (the address is set in js/data.js) -->
+      <a class="beyond" href="#" data-personal data-detect="personal_site">
+        <span class="mono beyond-label">outside the frame</span>
+        <span class="beyond-title">My personal site</span>
+        <span class="beyond-text">Hobbies, writing and blog posts: the rest of me, away from work.</span>
+        <span class="beyond-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
   </section>
 </main>
@@ -159,6 +165,7 @@
 <footer>
   <div class="wrap mono">
     <span>© <span id="year"></span> Gauri Makker</span>
+    <a href="#" data-personal>Personal site ↗</a>
   </div>
 </footer>
 
@@ -181,6 +188,5 @@
 <script src="js/main.js"></script>
 <script src="js/pathtracer.js"></script>
 <script src="js/vision.js"></script>
-<script src="js/bg.js"></script>
 </body>
 </html>
