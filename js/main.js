@@ -407,7 +407,7 @@
       <div class="wrap cs-body">
         <h2>The problem</h2>${para(p.problem)}
         <h2>My approach</h2>${para(p.approach)}
-        <h2>My role</h2>${para(p.role)}
+        ${p.team ? `<h2>My role</h2>${para(p.role)}` : ''}
         <h2>The hard part</h2>${para(p.hard)}
         <h2>What I'd do differently</h2>${para(p.differently)}
       </div>
