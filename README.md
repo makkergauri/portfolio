@@ -1,31 +1,54 @@
-# gauri.makker — portfolio
+# Portfolio
 
-My personal site. Plain HTML, CSS and JavaScript, plus three.js for the hero render. No build step.
+> Personal portfolio site with a physically based path tracer rendering live in the browser as the hero visual, built in vanilla JS and Three.js.
 
-**Light & Sight:** the hero is a small path tracer running live in the browser (it starts as noise and converges in a second or two; drag to orbit the camera), and a "vision layer" then tracks what it rendered with live detection boxes, a scan line and a detection log.
+**[Source](https://github.com/makkergauri/portfolio)**
 
-## Files
+---
 
-| File | What it does |
-|---|---|
-| `index.html` | Home page |
-| `project.html` | Case-study page, filled from `data.js` via `project.html?p=slug` |
-| `js/data.js` | **All the written content** (experience, projects, notes). Edit this first. |
-| `js/pathtracer.js` | The hero render (path tracer shader, drag-to-orbit camera) |
-| `js/vision.js` | Hero vision layer: detection boxes, scan line, light motes, detection log |
-| `js/main.js` | Theme toggle, cursor, radar page map, scroll effects, case studies |
-| `css/style.css` | All styling; colours for both themes are at the top |
+## The problem
 
-## Before publishing
+Most portfolio sites either use a static template or bolt on generic animations that have nothing to do with the person's actual work. For a computer vision and rendering portfolio specifically, a decorative hero image undersells the point — the more honest signal is a renderer that's actually running, live, on the page.
 
-1. Search the project for `PLACEHOLDER` and fill each one in (mostly "My role" and "What I'd do differently" in `js/data.js`).
-2. Add `resume.pdf` to the root folder (a version without your phone number).
-3. Optional: add real screenshots, e.g. `assets/playvision.webp`, and set `image: "assets/playvision.webp"` for that project in `data.js`.
+## Approach
 
-## Run locally
+The hero section runs a small path tracer directly in the browser using Three.js and WebGL, so the first thing a visitor sees is real rendering work rather than a static image. The rest of the site (About, Experience, Projects, Notes, Contact) is plain HTML/CSS/JS with content driven from a single data file, so new projects or notes can be added without touching layout code. Theme (light/dark) is resolved before paint via a small inline script to avoid a flash of the wrong theme, and a radar-style nav tracks scroll position across sections.
 
-Open the folder in VS Code and use the **Live Server** extension, or run `python -m http.server` in the folder and open http://localhost:8000.
+```mermaid
+flowchart LR
+    A[index.html] --> B[data.js: content]
+    A --> C[main.js: layout, nav, theme]
+    A --> D[pathtracer.js: WebGL renderer]
+    B --> E[Rendered sections]
+    C --> E
+    D --> F[Live hero render]
+```
 
-## Deploy
+## Results
 
-Push to GitHub, then on vercel.com choose **Add New → Project**, import this repo, and deploy with the default settings (framework preset: Other). Every push to `main` redeploys.
+| Metric | Value | How it was measured |
+|---|---|---|
+| Path tracer samples/sec | TBD | Mean over N frames on [hardware/browser] |
+| Page load time | TBD | Lighthouse / DevTools, [connection speed] |
+
+
+**Limitations:** path tracer performance depends on the visitor's GPU and browser; older devices may render at a lower sample count or fall back to a static frame.
+
+## Tech stack
+
+HTML, CSS, JavaScript, Three.js (WebGL), Google Fonts.
+
+## Running it
+
+```bash
+git clone https://github.com/makkergauri/portfolio.git
+cd portfolio
+# serve locally, e.g.:
+python -m http.server 8000
+```
+
+Requires a local server (not `file://`) since the page loads Three.js from a CDN and uses WebGL. Needs an internet connection for the CDN script and fonts.
+
+## My role
+
+Solo project. Designed and built independently — layout, styling, content structure, and the WebGL path tracer running in the hero section.
