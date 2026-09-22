@@ -1,13 +1,12 @@
 /* =============================================================
    PERSONAL PAGE CONTENT (personal.html)
-   Everything written on the page lives here, so you can change
-   words without touching layout code.
+   Everything written on the page lives here.
    ============================================================= */
 
 window.ME = {
 
   /* the line under "Hi, I'm Gauri" */
-  tagline: "Mountains, beaches, mandalas and rom-coms. I talk a lot, dance more, and cannot sing.",
+  tagline: "So....this is me. Could I be any more Somiii?",
 
   /* the moving strip near the top */
   now: [
@@ -29,7 +28,7 @@ window.ME = {
     "beach person too",
     "funniest in Hindi",
     "cannot sing, not even once",
-    "will talk to anyone"
+    "I love talking, and I talk a lot"
   ],
 
   /* the line at the top of the page */
@@ -52,9 +51,7 @@ window.ME = {
     { title: "Talking", line: "My favourite sport. I can turn a two-minute story into twenty.", art: "talk" }
   ],
 
-  /* PLACES I'VE BEEN
-     Add a new line each time you travel somewhere. lat / lon: search
-     "<place> coordinates" and copy the two numbers. */
+  /* PLACES I'VE BEEN */
   home: { place: "Uttarakhand", lat: 30.07, lon: 79.09 },
   visited: [
     { place: "Uttarakhand", lat: 30.07, lon: 79.09, note: "home" },
@@ -66,16 +63,10 @@ window.ME = {
     { place: "Pondicherry", lat: 11.93, lon: 79.83, note: "the sea" }
   ],
 
-  /* A VIDEO OF ME TALKING
-     Either put a file at assets/video.mp4, or paste a YouTube video ID
-     (the part after v= in the link) into "youtube". Leave both empty
-     and the page shows "coming soon". */
-  video: { file: "assets/video.mp4", youtube: "", caption: "Two minutes of me, talking. Which, for me, is restraint." },
+  /* A VIDEO OF ME TALKING */
+  video: { file: "assets/video.mp4", youtube: "", caption: "My Story." },
 
-  /* GUESTBOOK
-     Notes people send you arrive by email. Paste the ones you like here
-     and they appear on the page:
-     { name: "Aarav", line: "What they wrote." } */
+  /* GUESTBOOK */
   guestbook: [
   ],
 

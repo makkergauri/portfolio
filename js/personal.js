@@ -1,7 +1,7 @@
 /* =============================================================
    personal.js
    - theme toggle (shared with the work portfolio)
-   - avatar breathes and sways with the mouse (first screen only)
+   - avatar breathes and sways with the mouse
    - a mandala that draws itself, click for a new one
    - globe of the places I've been
    - photos, video, guestbook
@@ -155,10 +155,10 @@
       <li><button type="button" data-i="${i}">
         <span class="n">${String(i + 1).padStart(2, '0')}</span>
         <span class="name">${esc(p.place)}</span>
-        <span class="st">${esc(p.note || 'been there')}</span>
+        <span class="st">${esc(p.note || 'checked')}</span>
       </button></li>`).join('');
     const c = $('#travelCount');
-    if (c) c.innerHTML = `<b>${been.length}</b> down. The rest of the map is still blank.`;
+    if (c) c.innerHTML = `<b>${been.length}</b> down. The world awaits!`;
   }
   if (canvas && window.LAND) {
     const ctx = canvas.getContext('2d');
