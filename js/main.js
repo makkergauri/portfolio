@@ -415,7 +415,6 @@
         <h2>My approach</h2>${para(p.approach)}
         ${p.team ? `<h2>My role</h2>${para(p.role)}` : ''}
         <h2>The hard part</h2>${para(p.hard)}
-        <h2>What I'd do differently</h2>${para(p.differently)}
       </div>
       <nav class="wrap cs-nav" aria-label="More projects">
         <a href="project.html?p=${prev.slug}">Previous: ${esc(prev.title)}</a>
