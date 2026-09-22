@@ -12,7 +12,7 @@
 <script>
   /* set the theme before paint so there's no flash */
   (function () { var t; try { t = localStorage.getItem('theme'); } catch (e) {}
-    if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    if (!t) t = 'dark';   /* dark by default */
     document.documentElement.dataset.theme = t; })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,7 @@
 </head>
 <body>
 <a class="skip" href="#cs">Skip to content</a>
+<div class="backdrop" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="dots"></div></div>
 <header class="bar">
   <div class="wrap">
     <nav class="nav" aria-label="Sections">
@@ -30,8 +31,10 @@
       <a href="index.html#work">Projects</a>
       <a href="index.html#notes">Notes</a>
       <a href="index.html#contact">Contact</a>
+      <a href="resume.pdf" target="_blank" rel="noopener">Resume</a>
       <a href="#" data-personal>Personal site ↗</a>
     </nav>
+    <button class="cmdk" type="button" aria-label="Open command palette"><span>Search</span><kbd>Ctrl K</kbd></button>
     <button class="switch" id="themeToggle" type="button" aria-label="Switch between dark and light theme">
       <span class="switch-icon" aria-hidden="true"></span><span class="switch-text">Dark</span>
     </button>
@@ -42,5 +45,6 @@
 <div id="hoverbox" aria-hidden="true"><span class="det-label"></span></div>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
+<script src="js/features.js"></script>
 </body>
 </html>

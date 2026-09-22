@@ -75,7 +75,7 @@
         const codes = ['IN', 'US', 'GB', 'JP', 'BR', 'DE', 'FR', 'AU', 'CA', 'ZA', 'NG', 'KR'], wx = ['sun', 'partly', 'cloud', 'rain', 'storm'];
         return `<div class="art wx" aria-hidden="true">${codes.map((c, i) => `<div class="wx-cell wx-${wx[(i * 7 + 3) % 5]}"><i></i><span>${c}</span></div>`).join('')}</div>`;
       }
-      default: return `<canvas aria-hidden="true"></canvas>`;   // radar, cave
+      default: return `<canvas aria-hidden="true"></canvas>`;   // radar, cave, farm
     }
   }
 
@@ -144,8 +144,7 @@
       return;
     }
     if (!cv) return;
-    const w = cv.width = cv.clientWidth * devicePixelRatio, h = cv.height = cv.clientHeight * devicePixelRatio;
-    const c = cv.getContext('2d');
+    cv.width = cv.clientWidth * devicePixelRatio; cv.height = cv.clientHeight * devicePixelRatio;
     if (kind === 'cave') { const st = caves.find(c => c.cv === cv); if (st) newCave(st); else caves.push(newCave({ cv })); drawCave(caves.find(c => c.cv === cv)); }
     if (kind === 'radar' && !radars.includes(cv)) radars.push(cv);
     if (kind === 'farm' && !farms.includes(cv)) farms.push(cv);
@@ -173,6 +172,7 @@
     if (!reduce) { if (Math.random() < .012) { ball.tx = Math.random(); ball.ty = Math.random(); } ball.x += (ball.tx - ball.x) * .03; ball.y += (ball.ty - ball.y) * .03; }
     c.fillStyle = css('--ink'); c.beginPath(); c.arc(m + ball.x * pw, m + ball.y * ph, 3.5 * dp, 0, 6.28); c.fill();
   }
+
   // Focus Farm: pixel plants grow while "focused" and wilt during a "distracted" spell
   function drawFarm(cv, now) {
     const w = cv.width = cv.clientWidth * devicePixelRatio, h = cv.height = cv.clientHeight * devicePixelRatio, c = cv.getContext('2d');
@@ -203,7 +203,9 @@
       else if (st.step >= 5 && now - st.t > 3200 && !reduce) { newCave(st); drawCave(st); }
     });
     radars.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawRadar(cv); });
-    farms.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawFarm(cv, now); }); if (!reduce) requestAnimationFrame(radarLoop); })();
+    farms.forEach(cv => { const r = cv.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) drawFarm(cv, now); });
+    if (!reduce) requestAnimationFrame(radarLoop);
+  })();
   // click the cave to generate a new one
   $$('.frame[data-visual="cave"]').forEach(f => f.addEventListener('click', e => { e.preventDefault(); drawArt(f); }));
 
@@ -240,7 +242,12 @@
       if (moved) { pts.push({ x: mx, y: my }); if (pts.length > 18) pts.shift(); }
       tc.clearRect(0, 0, trail.width, trail.height);
       tc.strokeStyle = css('--sight'); tc.lineWidth = 1.5 * devicePixelRatio; tc.lineCap = 'round';
-      for (let i = 1; i < pts.length; i++) { if (Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 160) continue; tc.globalAlpha = i / pts.length * .5; tc.beginPath(); tc.moveTo(pts[i - 1].x * devicePixelRatio, pts[i - 1].y * devicePixelRatio); tc.lineTo(pts[i].x * devicePixelRatio, pts[i].y * devicePixelRatio); tc.stroke(); }
+      for (let i = 1; i < pts.length; i++) {
+        if (Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 160) continue;
+        tc.globalAlpha = i / pts.length * .5; tc.beginPath();
+        tc.moveTo(pts[i - 1].x * devicePixelRatio, pts[i - 1].y * devicePixelRatio);
+        tc.lineTo(pts[i].x * devicePixelRatio, pts[i].y * devicePixelRatio); tc.stroke();
+      }
       tc.globalAlpha = 1;
       requestAnimationFrame(loop);
     })();
@@ -262,7 +269,7 @@
 
   /* ---------- radar page map ---------- */
   const radar = $('#radar'), svg = $('#radarSvg');
-  const secs = [['top', 'render'], ['about', 'emit'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['signal', 'signal'], ['contact', 'converge']]
+  const secs = [['top', 'render'], ['about', 'emit'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['contact', 'converge']]
     .map(([id, name]) => ({ el: document.getElementById(id), name })).filter(s => s.el);
   let you;
   if (radar && svg && secs.length) {
@@ -277,7 +284,7 @@
   }
 
   /* ---------- reveal on scroll ---------- */
-  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
+  const revealSel = '.h2, .pass, .intro, .about-text p, .edu, .facts > div, .job, .notes li, .kit > div, .live, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
   // clipped headings can't be observed directly (they have no visible area yet), so watch their parent instead
   const watchers = new Map();
   const rev = new IntersectionObserver(es => es.forEach(e => {
@@ -318,8 +325,8 @@
   let rayLen = 0;
   function buildRay() {
     if (!timeline || !rayPath) return;
-    const tr = timeline.getBoundingClientRect();
-    const dots = $$('.dot', timeline).map(d => { const r = d.getBoundingClientRect(); return [r.left + r.width / 2 - tr.left, r.top + r.height / 2 - tr.top]; });
+    // use layout positions (not on-screen positions), so the scroll-in animation can't shift the ray off the dots
+    const dots = $$('.dot', timeline).map(d => { const job = d.closest('.job'); return [job.offsetLeft + d.offsetLeft + d.offsetWidth / 2, job.offsetTop + d.offsetTop + d.offsetHeight / 2]; });
     if (!dots.length) return;
     let d = `M ${dots[0][0]} ${-30}`;
     dots.forEach(([x, y], i) => { const side = i % 2 ? -1 : 1; const midY = i ? (dots[i - 1][1] + y) / 2 : y - 30; if (i) d += ` L ${x + side * 26} ${midY}`; d += ` L ${x} ${y}`; });
@@ -380,7 +387,6 @@
   addEventListener('load', onResize);
   document.fonts && document.fonts.ready.then(onResize);
   onResize();
-
 
   /* ---------- case-study page ---------- */
   const cs = $('#cs');

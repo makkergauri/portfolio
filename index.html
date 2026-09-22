@@ -14,7 +14,7 @@
 <script>
   /* set the theme before paint so there's no flash */
   (function () { var t; try { t = localStorage.getItem('theme'); } catch (e) {}
-    if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    if (!t) t = 'dark';   /* dark by default */
     document.documentElement.dataset.theme = t; })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,8 +25,8 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- background: a cloud of light particles that reshapes itself for each section as you scroll -->
-<canvas id="bg" aria-hidden="true"></canvas>
+<!-- background: soft moving light, and a dot grid your cursor lights up -->
+<div class="backdrop" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="dots"></div></div>
 
 <header class="bar">
   <div class="wrap">
@@ -36,9 +36,12 @@
       <a href="#work">Projects</a>
       <a href="#notes">Notes</a>
       <a href="#contact">Contact</a>
+      <a href="resume.pdf" target="_blank" rel="noopener">Resume</a>
+      <a href="#" data-personal>Personal site ↗</a>
     </nav>
-    <button class="switch" id="themeToggle" type="button" aria-label="Switch between night and day theme">
-      <span class="plate" aria-hidden="true"></span><span class="switch-text">Night</span>
+    <button class="cmdk" type="button" aria-label="Open command palette"><span>Search</span><kbd>Ctrl K</kbd></button>
+    <button class="switch" id="themeToggle" type="button" aria-label="Switch between dark and light theme">
+      <span class="switch-icon" aria-hidden="true"></span><span class="switch-text">Dark</span>
     </button>
   </div>
 </header>
@@ -77,17 +80,27 @@
       <h2 class="h2">About</h2>
       <div class="about">
         <div class="about-text">
-          <p>I'm Gauri, a final-year computer science student at VIT Bhopal. I work where images, language and systems meet.</p>
-          <p>That has meant tracking every player in a football match from broadcast video, building retrieval systems that refuse to answer without a source, and sending disaster warnings over SMS in the languages people actually speak.</p>
-          <p>I learn best by building things from the bottom up, so I've written a path tracer and a 2D game engine in C++ without borrowing an engine for either. The image at the top of this page is a small version of that path tracer, running live in your browser.</p>
+          <p>I'm Gauri, a final-year computer science student at VIT Bhopal.</p>
+          <p>I build computer vision, LLM and systems projects, usually from scratch.</p>
         </div>
-        <dl class="facts">
-          <div><dt>Currently</dt><dd>Final year, B.Tech Computer Science, VIT Bhopal</dd></div>
-          <div><dt>Focus</dt><dd>Computer vision, grounded LLMs, rendering</dd></div>
-          <div><dt>Based in</dt><dd>Bhopal, India</dd></div>
-          <div><dt>Speaks</dt><dd>Punjabi, Hindi, English</dd></div>
-          <div><dt>Certified</dt><dd>AWS Certified Cloud Practitioner, AWS Technical Essentials</dd></div>
-        </dl>
+        <div class="about-side">
+          <div class="edu">
+            <span class="det-label">education</span>
+            <div class="edu-top">
+              <div>
+                <strong>B.Tech, Computer Science and Engineering</strong>
+                <span>Vellore Institute of Technology, Bhopal · 2023 – 2027</span>
+              </div>
+              <div class="edu-cgpa"><b>8.44</b><span>/ 10 CGPA</span></div>
+            </div>
+          </div>
+          <dl class="facts">
+            <div><dt>Coursework</dt><dd>Algorithms, Machine Learning, Computer Networks, Parallel & Distributed Computing, Linear Algebra</dd></div>
+            <div><dt>Focus</dt><dd>Computer vision, grounded LLMs, rendering</dd></div>
+            <div><dt>Certified</dt><dd>AWS Cloud Practitioner, AWS Technical Essentials</dd></div>
+            <div><dt>Languages</dt><dd>Punjabi, Hindi, English</dd></div>
+          </dl>
+        </div>
       </div>
     </div>
   </section>
@@ -123,6 +136,12 @@
       <h2 class="h2">Notes</h2>
       <p class="intro">Write-ups of things I built and what they taught me.</p>
       <ul class="notes" id="notesList"><!-- filled from js/data.js --></ul>
+
+      <!-- live from GitHub: filled by js/features.js, stays hidden if GitHub can't be reached -->
+      <div class="live" id="ghLive" hidden>
+        <div class="live-head mono"><span class="live-dot" aria-hidden="true"></span>live from github: what I pushed most recently</div>
+        <ul class="live-list" id="ghList"></ul>
+      </div>
     </div>
   </section>
 
@@ -151,6 +170,7 @@
         <a href="https://github.com/makkergauri" data-detect="github">GitHub</a>
         <a href="https://www.linkedin.com/in/gauri-makker/" data-detect="linkedin">LinkedIn</a>
         <a href="resume.pdf" data-detect="resume">Resume</a>
+        <a href="#" data-personal data-detect="personal_site">Personal site ↗</a>
       </div>
     </div>
   </section>
@@ -159,6 +179,7 @@
 <footer>
   <div class="wrap mono">
     <span>© <span id="year"></span> Gauri Makker</span>
+    <a href="#" data-personal>Personal site ↗</a>
   </div>
 </footer>
 
@@ -181,6 +202,6 @@
 <script src="js/main.js"></script>
 <script src="js/pathtracer.js"></script>
 <script src="js/vision.js"></script>
-<script src="js/bg.js"></script>
+<script src="js/features.js"></script>
 </body>
 </html>
