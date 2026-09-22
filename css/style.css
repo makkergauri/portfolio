@@ -266,15 +266,6 @@ p { margin: 0 0 1em; }
 .kit ul { list-style: none; margin: 0; padding: 0; }
 .kit li { padding: .4rem 0; border-bottom: 1px solid var(--rule); }
 
-/* hobbies */
-.life-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
-.life-card { position: relative; min-height: 230px; padding: 1.5rem; border: 1px solid var(--rule); display: flex; flex-direction: column; justify-content: flex-end; transition: border-color .3s, transform .3s; }
-.life-card:hover { border-color: var(--sight); transform: translateY(-4px); }
-.life-card .tag { position: absolute; top: -1px; left: -1px; background: var(--sight); color: #fff; font: 500 .7rem/1 var(--mono); padding: .3rem .45rem; }
-.life-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 1rem; }
-.life-card h3 { font-size: 1.6rem; font-stretch: 112%; letter-spacing: -.02em; line-height: 1.1; margin-bottom: .5rem; }
-.life-card p { color: var(--ink-2); margin: 0; }
-
 /* contact: rays converge on the email */
 .contact { text-align: left; overflow: hidden; }
 .converge { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -357,3 +348,80 @@ footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wr
   .sms div, .docs i::after, .docs i::before, .gantt span, .gantt .playhead, .spheres b { animation: none !important; opacity: 1; }
   .scan, #motes { display: none; }
 }
+
+/* =============================================================
+   VIDEO STATEMENT: a camera feed
+   ============================================================= */
+.feed { position: relative; margin-top: 3rem; aspect-ratio: 16 / 9; background: #0b0a09; overflow: hidden; }
+.feed video, .feed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; background: #0b0a09; }
+.feed.youtube video { display: none; }
+.feed-noise { /* grain that clears when the video starts, like the hero render converging */
+  position: absolute; inset: 0; pointer-events: none; opacity: .35; transition: opacity 1.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+  animation: grain .4s steps(3) infinite;
+}
+@keyframes grain { 33% { background-position: 40px 20px; } 66% { background-position: -30px 50px; } }
+.feed.playing .feed-noise { opacity: 0; }
+.feed-box { /* detection box on the subject */
+  position: absolute; inset: 14% 30% 10%; pointer-events: none; border: 1.5px solid var(--sight);
+  clip-path: inset(0 100% 100% 0); transition: clip-path .9s cubic-bezier(.7, 0, .2, 1), opacity .6s;
+}
+.feed.in .feed-box { clip-path: inset(-40px); }
+.feed.playing .feed-box { opacity: 0; }
+.feed::before { /* camera corner brackets */
+  content: ""; position: absolute; inset: 18px; z-index: 2; pointer-events: none; opacity: .8;
+  background:
+    linear-gradient(var(--ink-2), var(--ink-2)) 0 0/22px 1.5px no-repeat, linear-gradient(var(--ink-2), var(--ink-2)) 0 0/1.5px 22px no-repeat,
+    linear-gradient(var(--ink-2), var(--ink-2)) 100% 0/22px 1.5px no-repeat, linear-gradient(var(--ink-2), var(--ink-2)) 100% 0/1.5px 22px no-repeat,
+    linear-gradient(var(--ink-2), var(--ink-2)) 0 100%/22px 1.5px no-repeat, linear-gradient(var(--ink-2), var(--ink-2)) 0 100%/1.5px 22px no-repeat,
+    linear-gradient(var(--ink-2), var(--ink-2)) 100% 100%/22px 1.5px no-repeat, linear-gradient(var(--ink-2), var(--ink-2)) 100% 100%/1.5px 22px no-repeat;
+}
+.feed.youtube::before, .feed.youtube .feed-hud { display: none; }
+.feed-hud { position: absolute; z-index: 3; top: 30px; left: 34px; right: 34px; display: flex; justify-content: space-between; color: #f1ece4; pointer-events: none; }
+.feed-hud .rec::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sight); margin-right: .45rem; vertical-align: .05em; opacity: .5; }
+.feed.rolling .rec::before { opacity: 1; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .15; } }
+.feed-play {
+  position: absolute; z-index: 3; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px;
+  border-radius: 50%; border: 1.5px solid #f1ece4; background: rgba(11, 10, 9, .35); color: #f1ece4; cursor: pointer;
+  display: grid; place-items: center; transition: transform .25s, background-color .25s, border-color .25s;
+}
+.feed-play::before { content: ""; width: 0; height: 0; border-left: 18px solid currentColor; border-top: 11px solid transparent; border-bottom: 11px solid transparent; margin-left: 5px; }
+.feed-play span { position: absolute; top: calc(100% + 10px); letter-spacing: .08em; }
+.feed-play:hover { transform: scale(1.06); background: var(--sight); border-color: var(--sight); }
+.feed.playing .feed-play { display: none; }
+.feed-empty { display: none; position: absolute; inset: 0; z-index: 3; place-content: center; text-align: center; color: #a59e93; line-height: 1.8; margin: 0; }
+.feed.no-video .feed-empty { display: grid; }
+.feed.no-video .feed-play, .feed.no-video video { display: none; }
+
+/* =============================================================
+   OUTLIERS: hobbies as points far from the work clusters
+   ============================================================= */
+.ood { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(1.5rem, 3vw, 3rem); margin-top: 3rem; align-items: stretch; }
+.embed { position: relative; aspect-ratio: 4 / 3; border: 1px solid var(--rule); background: var(--bg-2); }
+.embed canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.axis { position: absolute; color: var(--ink-2); }
+.axis.x { right: 10px; bottom: 8px; }
+.axis.y { left: 10px; top: 8px; }
+.pt { position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 10px; cursor: pointer; color: var(--ink); }
+.pt-dot { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--sight); box-shadow: 0 0 0 0 color-mix(in srgb, var(--sight) 60%, transparent); animation: pulse 2.4s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 12px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.pt-label { position: absolute; left: 50%; top: calc(100% - 4px); transform: translateX(-50%); white-space: nowrap; color: var(--ink-2); font-size: .7rem; }
+.pt::before { /* detection box around the selected point */
+  content: ""; position: absolute; inset: -4px; border: 1.5px solid var(--sight); clip-path: inset(0 100% 100% 0); transition: clip-path .45s cubic-bezier(.7, 0, .2, 1);
+}
+.pt.on::before { clip-path: inset(-20px); }
+.pt.on .pt-label { color: var(--ink); }
+.ood-card { position: relative; border: 1px solid var(--rule); padding: 2.2rem 1.6rem 1.6rem; display: flex; flex-direction: column; justify-content: flex-end; min-height: 280px; }
+.ood-card .det-label { top: -1px; left: -1px; bottom: auto; }
+.ood-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 1.2rem; }
+.ood-card h3 { font-size: clamp(1.6rem, 2.6vw, 2.3rem); font-stretch: 115%; letter-spacing: -.02em; line-height: 1.05; margin: .3rem 0 .8rem; }
+.ood-card p { color: var(--ink-2); margin: 0; font-size: 1.05rem; }
+.ood-card .pass { margin: 0; }
+.ood-count { position: absolute; top: .7rem; right: .9rem; color: var(--ink-2); }
+.ood-card.show > * { animation: cardIn .5s cubic-bezier(.2, .7, .2, 1) both; }
+.ood-card.show > *:nth-child(3) { animation-delay: .05s; } .ood-card.show > *:nth-child(4) { animation-delay: .1s; } .ood-card.show > *:nth-child(5) { animation-delay: .15s; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } }
+@media (max-width: 860px) { .ood { grid-template-columns: 1fr; } .pt-label { display: none; } .pt.on .pt-label { display: block; } }
+@media (prefers-reduced-motion: reduce) { .feed-noise, .pt-dot, .ood-card.show > * { animation: none !important; } }
+@media (max-width: 760px) { .feed-box { display: none; } .feed-empty { font-size: .7rem; padding: 0 1.5rem; } .feed-play { width: 72px; height: 72px; margin: -36px 0 0 -36px; } }

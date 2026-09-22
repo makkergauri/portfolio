@@ -211,7 +211,7 @@
 
   /* ---------- radar page map ---------- */
   const radar = $('#radar'), svg = $('#radarSvg');
-  const secs = [['top', 'render'], ['about', 'emit'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['life', 'ambient'], ['contact', 'converge']]
+  const secs = [['top', 'render'], ['about', 'emit'], ['statement', 'signal'], ['experience', 'bounce'], ['work', 'detect'], ['notes', 'track'], ['toolkit', 'materials'], ['outliers', 'outliers'], ['contact', 'converge']]
     .map(([id, name]) => ({ el: document.getElementById(id), name })).filter(s => s.el);
   let you;
   if (radar && svg && secs.length) {
@@ -226,7 +226,7 @@
   }
 
   /* ---------- reveal on scroll ---------- */
-  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .life-grid > article, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
+  const revealSel = '.h2, .pass, .intro, .about-text p, .facts > div, .job, .notes li, .kit > div, .feed, .ood, .email, .elsewhere, .proj > div:last-child, .cs-body > *';
   // clipped headings can't be observed directly (they have no visible area yet), so watch their parent instead
   const watchers = new Map();
   const rev = new IntersectionObserver(es => es.forEach(e => {

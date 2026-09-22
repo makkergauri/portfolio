@@ -29,10 +29,11 @@
   <div class="wrap">
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
+      <a href="#statement">Video</a>
       <a href="#experience">Experience</a>
       <a href="#work">Projects</a>
       <a href="#notes">Notes</a>
-      <a href="#life">Life</a>
+      <a href="#outliers">Outliers</a>
       <a href="#contact">Contact</a>
     </nav>
     <button class="switch" id="themeToggle" type="button" aria-label="Switch between night and day theme">
@@ -90,10 +91,31 @@
     </div>
   </section>
 
-  <!-- ============ 02 BOUNCE ============ -->
+  <!-- ============ 02 SIGNAL: VIDEO STATEMENT ============ -->
+  <section class="section" id="statement">
+    <div class="wrap">
+      <span class="pass mono">pass 02: signal</span>
+      <h2 class="h2">In my own words</h2>
+      <p class="intro">A short video about what I build, why I build it, and what I want to work on next.</p>
+      <!-- To use YouTube instead of a file, put the video ID in data-youtube, e.g. data-youtube="dQw4w9WgXcQ" -->
+      <div class="feed" id="feed" data-youtube="">
+        <video id="feedVideo" preload="metadata" playsinline>
+          <source src="assets/statement.mp4" type="video/mp4">
+          <track kind="captions" src="assets/statement.vtt" srclang="en" label="English" default>
+        </video>
+        <div class="feed-noise" aria-hidden="true"></div>
+        <div class="feed-box" aria-hidden="true"><span class="det-label">subject 0.99</span></div>
+        <div class="feed-hud mono" aria-hidden="true"><span class="rec">rec</span><span id="feedTime">00:00:00</span></div>
+        <button class="feed-play" id="feedPlay" type="button" aria-label="Play video statement"><span class="mono">play</span></button>
+        <p class="feed-empty mono">Video coming soon.<br>(Add assets/statement.mp4, or set data-youtube.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 BOUNCE ============ -->
   <section class="section" id="experience">
     <div class="wrap">
-      <span class="pass mono">pass 02: bounce</span>
+      <span class="pass mono">pass 03: bounce</span>
       <h2 class="h2">Experience</h2>
       <div class="timeline" id="timeline">
         <svg class="ray" id="ray" aria-hidden="true"><path class="ghost" id="rayGhost"/><path id="rayPath"/><circle class="photon" id="photon" r="5" cx="-20" cy="-20"/></svg>
@@ -102,11 +124,11 @@
     </div>
   </section>
 
-  <!-- ============ 03 DETECT ============ -->
+  <!-- ============ 04 DETECT ============ -->
   <section class="work" id="work">
     <div class="work-pin">
       <div class="wrap work-head">
-        <span class="pass mono">pass 03: detect</span>
+        <span class="pass mono">pass 04: detect</span>
         <h2 class="h2">Projects</h2>
       </div>
       <div class="track" id="track"><!-- filled from js/data.js --></div>
@@ -114,20 +136,20 @@
     </div>
   </section>
 
-  <!-- ============ 04 TRACK ============ -->
+  <!-- ============ 05 TRACK ============ -->
   <section class="section" id="notes">
     <div class="wrap">
-      <span class="pass mono">pass 04: track</span>
+      <span class="pass mono">pass 05: track</span>
       <h2 class="h2">Notes</h2>
       <p class="intro">Write-ups of things I built and what they taught me.</p>
       <ul class="notes" id="notesList"><!-- filled from js/data.js --></ul>
     </div>
   </section>
 
-  <!-- ============ TOOLKIT ============ -->
+  <!-- ============ 06 TOOLKIT ============ -->
   <section class="section" id="toolkit">
     <div class="wrap">
-      <span class="pass mono">pass 05: materials</span>
+      <span class="pass mono">pass 06: materials</span>
       <h2 class="h2">Toolkit</h2>
       <div class="kit">
         <div><h3>Languages</h3><ul><li>Python</li><li>C++</li><li>Java</li><li>JavaScript</li><li>TypeScript</li><li>SQL</li></ul></div>
@@ -138,38 +160,28 @@
     </div>
   </section>
 
-  <!-- ============ LIFE ============ -->
-  <section class="section" id="life">
+  <!-- ============ 07 OUTLIERS: HOBBIES ============ -->
+  <section class="section" id="outliers">
     <div class="wrap">
-      <span class="pass mono">pass 06: ambient</span>
-      <h2 class="h2">Off screen</h2>
-      <p class="intro">What I do when I'm not building things.</p>
-      <div class="life-grid">
-        <article class="life-card" data-detect="hobby">
-          <span class="tag">hobby 0.97</span>
-          <!-- optional photo: <img src="assets/hobby1.webp" alt="..."> -->
-          <h3>PLACEHOLDER: hobby one</h3>
-          <p>PLACEHOLDER: one or two lines about it.</p>
-        </article>
-        <article class="life-card" data-detect="hobby">
-          <span class="tag">hobby 0.95</span>
-          <h3>PLACEHOLDER: hobby two</h3>
-          <p>PLACEHOLDER: one or two lines about it.</p>
-        </article>
-        <article class="life-card" data-detect="hobby">
-          <span class="tag">hobby 0.93</span>
-          <h3>PLACEHOLDER: hobby three</h3>
-          <p>PLACEHOLDER: one or two lines about it.</p>
-        </article>
+      <span class="pass mono">pass 07: out of distribution</span>
+      <h2 class="h2">Outliers</h2>
+      <p class="intro">Plot everything I do in one embedding space and the work clusters neatly. These points don't. They're the things I do off screen.</p>
+      <div class="ood">
+        <div class="embed" id="embed">
+          <canvas id="embedCanvas" aria-hidden="true"></canvas>
+          <span class="axis x mono" aria-hidden="true">umap-1</span><span class="axis y mono" aria-hidden="true">umap-2</span>
+          <!-- outlier buttons are added from js/data.js (hobbies) -->
+        </div>
+        <article class="ood-card" id="oodCard" aria-live="polite"></article>
       </div>
     </div>
   </section>
 
-  <!-- ============ 07 CONVERGE ============ -->
+  <!-- ============ 08 CONVERGE ============ -->
   <section class="section contact" id="contact">
     <svg class="converge" id="converge" aria-hidden="true"></svg>
     <div class="wrap">
-      <span class="pass mono">pass 07: converge</span>
+      <span class="pass mono">pass 08: converge</span>
       <h2 class="h2">Say hello</h2>
       <a class="email" id="email" href="mailto:gaurimakker2006@gmail.com" data-detect="email">gaurimakker2006@gmail.com</a>
       <div class="elsewhere">
@@ -206,5 +218,6 @@
 <script src="js/main.js"></script>
 <script src="js/pathtracer.js"></script>
 <script src="js/vision.js"></script>
+<script src="js/outliers.js"></script>
 </body>
 </html>
