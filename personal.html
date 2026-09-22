@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gauri · off the clock</title>
+<meta name="description" content="Gauri Makker, away from work: photography, music, travel dreams and writing.">
+<meta property="og:title" content="Gauri · off the clock">
+<meta property="og:description" content="Photos, music, places I dream of, and the rest of me away from work.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23FFB23F'/><circle cx='16' cy='16' r='6' fill='%23FF3D8B'/></svg>">
+<script>
+  (function () { var t; try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (!t) t = 'dark';
+    document.documentElement.dataset.theme = t; })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/personal.css">
+</head>
+<body class="personal">
+<a class="skip" href="#me">Skip to content</a>
+<div class="backdrop" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="dots"></div></div>
+
+<header class="bar">
+  <div class="wrap">
+    <nav class="nav" aria-label="Sections">
+      <a href="#me">About</a>
+      <a href="#photos">Photos</a>
+      <a href="#music">Music</a>
+      <a href="#travel">Travel</a>
+      <a href="#writing">Writing</a>
+      <a href="index.html">Work portfolio ↗</a>
+    </nav>
+    <button class="switch" id="themeToggle" type="button" aria-label="Switch between dark and light theme">
+      <span class="switch-icon" aria-hidden="true"></span><span class="switch-text">Dark</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO: the avatar in front of the headline ============ -->
+  <section class="p-hero" aria-label="Introduction">
+    <h1 class="p-title" aria-label="Hi, I'm Gauri">
+      <span class="p-line"><span>Hi,</span> <span>I'm</span></span>
+      <span class="p-line p-name"><span>Gauri</span></span>
+    </h1>
+
+    <div class="p-avatar" id="avatar">
+      <img src="assets/avatar.webp" alt="Illustrated avatar of Gauri: long wavy dark hair, clear rectangular glasses, a small smile" width="963" height="1000">
+      <!-- little detection tags pointing at her, a nod to the work portfolio -->
+      <span class="tag t1" aria-hidden="true">glasses 0.99</span>
+      <span class="tag t2" aria-hidden="true">curls 0.98</span>
+      <span class="tag t3" aria-hidden="true">smile 0.97</span>
+    </div>
+
+    <p class="p-tagline" id="tagline"></p>
+    <a class="p-cta" href="mailto:gaurimakker2006@gmail.com">Say hi <span aria-hidden="true">→</span></a>
+  </section>
+
+  <!-- ============ RIGHT NOW (moving strip) ============ -->
+  <div class="now" aria-label="What I'm up to right now">
+    <div class="now-track" id="nowTrack"></div>
+  </div>
+
+  <!-- ============ ABOUT ME ============ -->
+  <section class="section" id="me">
+    <div class="wrap">
+      <h2 class="h2">A bit about me</h2>
+      <div class="p-about-text" id="aboutText"></div>
+      <ul class="facts-chips" id="factList" aria-label="Quick facts"></ul>
+    </div>
+  </section>
+
+  <!-- ============ A LINE I LIVE BY ============ -->
+  <section class="section p-quote" id="quote">
+    <div class="wrap">
+      <figure>
+        <blockquote id="quoteText"></blockquote>
+        <figcaption class="mono" id="quoteBy"></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ PHOTOS ============ -->
+  <section class="section" id="photos">
+    <div class="wrap">
+      <h2 class="h2">Through my lens</h2>
+      <p class="intro">Moments I didn't want to forget. Click a photo to see it bigger.</p>
+      <div class="gallery" id="gallery"></div>
+    </div>
+  </section>
+
+  <!-- ============ HOBBIES ============ -->
+  <section class="section" id="hobbies">
+    <div class="wrap">
+      <h2 class="h2">Hobbies</h2>
+      <div class="hobbies" id="hobbyList"></div>
+    </div>
+  </section>
+
+  <!-- ============ MUSIC ============ -->
+  <section class="section" id="music">
+    <div class="wrap">
+      <h2 class="h2">On repeat</h2>
+      <p class="intro">What's playing right now. Please don't ask me to sing along.</p>
+      <div class="tracks" id="trackList"></div>
+    </div>
+  </section>
+
+  <!-- ============ TRAVEL ============ -->
+  <section class="section" id="travel">
+    <div class="wrap">
+      <h2 class="h2">Places I dream of</h2>
+      <p class="intro">I want to see the whole world. Here's where I'm starting. Drag the globe, or pick a place.</p>
+      <div class="travel">
+        <div class="globe-box">
+          <canvas id="globe" aria-label="A spinning globe with pins on my dream destinations" role="img"></canvas>
+          <span class="globe-hint mono" aria-hidden="true">drag to spin</span>
+        </div>
+        <div>
+          <ol class="places" id="placeList"></ol>
+          <p class="travel-count mono" id="travelCount"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WRITING ============ -->
+  <section class="section" id="writing">
+    <div class="wrap">
+      <h2 class="h2">Writing</h2>
+      <ul class="posts" id="postList"></ul>
+    </div>
+  </section>
+
+  <!-- ============ BACK TO WORK ============ -->
+  <section class="section p-end">
+    <div class="wrap">
+      <h2 class="h2">Want the serious version?</h2>
+      <p class="intro">Projects, experience and case studies live on my work portfolio.</p>
+      <a class="p-cta p-cta-big" href="index.html">See my work <span aria-hidden="true">→</span></a>
+      <div class="elsewhere">
+        <a href="mailto:gaurimakker2006@gmail.com">Email</a>
+        <a href="https://github.com/makkergauri">GitHub</a>
+        <a href="https://www.linkedin.com/in/gauri-makker/">LinkedIn</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap mono">
+    <span>© <span id="year"></span> Gauri Makker</span>
+    <a href="index.html">Work portfolio ↗</a>
+  </div>
+</footer>
+
+<!-- photo viewer -->
+<dialog class="viewer" id="viewer" aria-label="Photo">
+  <button class="viewer-close" type="button" aria-label="Close">×</button>
+  <img id="viewerImg" alt="">
+  <p class="viewer-cap" id="viewerCap"></p>
+</dialog>
+
+<script src="js/personal-data.js"></script>
+<script src="js/globe-data.js"></script>
+<script src="js/personal.js"></script>
+</body>
+</html>

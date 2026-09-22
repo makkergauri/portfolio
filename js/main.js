@@ -33,7 +33,7 @@
   /* ---------- links to the personal site (address set in data.js) ---------- */
   const personal = (S.personalSite || '').trim();
   $$('[data-personal]').forEach(a => {
-    if (personal && !/PLACEHOLDER/.test(personal)) { a.href = personal; a.target = '_blank'; a.rel = 'noopener'; }
+    if (personal && !/PLACEHOLDER/.test(personal)) { a.href = personal; if (/^https?:/.test(personal)) { a.target = '_blank'; a.rel = 'noopener'; } }
     else { a.classList.add('is-placeholder'); a.title = 'Add your personal site address in js/data.js'; a.addEventListener('click', e => e.preventDefault()); }
   });
 
