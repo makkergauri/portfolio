@@ -72,5 +72,5 @@ window.ME = {
 
   /* where guestbook notes are sent. The first message triggers a one-time
      activation email from FormSubmit: click the link in it once. */
-  guestbookForm: "https://formsubmit.co/ajax/gaurimakker2006@gmail.com"
+  guestbookForm: "https://formspree.io/f/xkjgbwkl"
 };
