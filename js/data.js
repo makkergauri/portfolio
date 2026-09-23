@@ -81,7 +81,7 @@ window.SITE = {
       links: { code: "https://github.com/makkergauri/football_player_stats_tracker" },
       problem: "Match analysis is still largely done by hand: someone scrubs through footage to work out positions, possession and who covered which part of the pitch.",
       approach: "Two YOLOv8 models do the vision work. One detects players, referees and the ball; the other finds pitch keypoints, so camera coordinates can be transformed onto a flat, top-down pitch. ByteTrack keeps identities stable from frame to frame. Teams are identified without labelling any kits: each player crop is embedded with SigLIP, reduced with UMAP and clustered. The system then computes possession, player speed and territory control, and draws a tactical radar view.",
-      role: "Built the pipelines that turned raw tracking data into performance metrics, optimised YOLO inference for real-time detection, and built the dashboards analysts and coaches use to view the results.\"",
+      role: "Built the pipelines that turned raw tracking data into performance metrics, optimised YOLO inference for real-time detection, and built the dashboards analysts and coaches use to view the results.",
       hard: "Occlusion. When players cross or hide behind each other, the tracker can swap their identities. Running two models plus tracking fast enough to keep the frame rate up also took optimisation."
     },
     {
